@@ -77,6 +77,9 @@ class Node:
 
     def getCost(self):
         return self.cost
+    
+    def setCost(self, cost):
+        self.cost = cost
         
     def __eq__(self, other):
         if type(other) is type(self):
@@ -136,7 +139,7 @@ def makeNode(state, node=None, successor=None):
         arr.append(successor[1])
         return Node(state, arr, node.getCost() + successor[2])
     else:
-        return Node(state, [])
+        return Node(state, [], 0)
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
@@ -175,7 +178,6 @@ def heapContainsHigherCost(alist, node):
     for n in alist:
         if n[2] == node and n[0] > node.getCost():
             return True
-
     return False
 
 
@@ -213,10 +215,27 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-   
+    frontier = util.PriorityQueue()
+    frontier.push(makeNode(problem.getStartState()), 0)
+    closed = []
+    while not frontier.isEmpty():
+        node = frontier.pop()
+
+        if problem.isGoalState(node.getState()):
+            return node.getPath()
+
+        closed.append(node.getState())
+        for successor in problem.getSuccessors(node.getState()):
+            newnode = makeNode(successor[0], node, successor)
+            
+            if newnode.getState() not in closed and not heapContains(frontier.heap, newnode):
+                frontier.push(newnode, newnode.getCost() + heuristic(newnode.getState(), problem))
+            else:
+                if heapContainsHigherCost(frontier.heap, newnode):
+                    frontier.update(newnode, newnode.getCost() + heuristic(newnode.getState(), problem))
+            
     print "Deu ruim no a* search"
     return []
-
 
 # Abbreviations
 bfs = breadthFirstSearch

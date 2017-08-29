@@ -202,7 +202,6 @@ class PriorityQueue:
                     break
                 del self.heap[index]
                 self.heap.append((priority, c, item))
-                print 'atualizou'
                 heapq.heapify(self.heap)
                 break
             else:
