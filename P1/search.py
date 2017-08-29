@@ -62,6 +62,30 @@ class SearchProblem:
         util.raiseNotDefined()
 
 
+class Node:
+    
+    def __init__(self, state, path, cost=1):
+        self.state = state
+        self.path = path
+        self.cost = cost
+    
+    def getState(self):
+        return self.state
+    
+    def getPath(self):
+        return self.path
+
+    def getCost(self):
+        return self.cost
+        
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.getState() == other.getState()
+
+    def __ne__(self, other):
+        return not self.__eq__(self, other)
+
+
 def tinyMazeSearch(problem):
     """
     Returns a sequence of moves that solves tinyMaze.  For any other maze, the
@@ -87,7 +111,7 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """    
     frontier = util.Stack()
-    frontier.push((problem.getStartState(), []))
+    frontier.push(makeNode(problem.getStartState()))
     closed = []
     
     return recursiveDFS(problem, frontier, closed)
@@ -95,53 +119,90 @@ def depthFirstSearch(problem):
 def recursiveDFS(problem, frontier, closed):
     node = frontier.pop()
     
-    if(problem.isGoalState((node[0]))):
-        return node[1]
+    if(problem.isGoalState((node.getState()))):
+        return node.getPath()
     
-    for suc in problem.getSuccessors(node[0]):
+    for suc in problem.getSuccessors(node.getState()):
         if suc[0] not in closed:
-            newNode = makeNode(suc, node)
+            newNode = makeNode(suc[0], node, suc)
             frontier.push(newNode)
-            closed.append(node[0])
+            closed.append(node.getState())
     
     return recursiveDFS(problem, frontier, closed)
 
-def makeNode(successor, node):
-    arr = list(node[1])
-    arr.append(successor[1])
-    return (successor[0], arr)
+def makeNode(state, node=None, successor=None):
+    if node and successor:
+        arr = list(node.getPath())
+        arr.append(successor[1])
+        return Node(state, arr, node.getCost() + successor[2])
+    else:
+        return Node(state, [])
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     frontier = util.Queue()
-    frontier.push((problem.getStartState(), []))
+    frontier.push(makeNode(problem.getStartState()))
     closed = []
     
     while not frontier.isEmpty():
         node = frontier.pop()
-        closed.append(node[0])
+        closed.append(node)
 
-        if problem.isGoalState(node[0]):
-            return node[1]
+        if problem.isGoalState(node.getState()):
+            return node.getPath()
 
-        for successor in problem.getSuccessors(node[0]):
-            newnode = makeNode(successor, node)
-            if newnode[0] not in closed and not cont(frontier.list, newnode[0]):
+        for successor in problem.getSuccessors(node.getState()):
+            newnode = makeNode(successor[0], node, successor)
+            if newnode not in closed and not listContains(frontier.list, newnode):
                 frontier.push(newnode)
 
     print "Deu ruim no breadth first search"
-    return [];
+    return []
 
-def cont(alist, node):
-    for (state, path) in alist:
-        if state == node:
+def listContains(alist, node):
+    for n in alist:
+        if n == node:
             return True
     return False
 
+def heapContains(alist, node):
+    for n in alist:
+        if n[2] == node:
+            return True
+    return False
+
+def heapContainsHigherCost(alist, node):
+    for n in alist:
+        if n[2] == node and n[0] > node.getCost():
+            return True
+
+    return False
+
+
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push(makeNode(problem.getStartState()), 0)
+    closed = []
+    
+    while not frontier.isEmpty():
+        node = frontier.pop()
+
+        if problem.isGoalState(node.getState()):
+            return node.getPath()
+
+        closed.append(node.getState())
+        for successor in problem.getSuccessors(node.getState()):
+            newnode = makeNode(successor[0], node, successor)
+            
+            if newnode.getState() not in closed and not heapContains(frontier.heap, newnode):
+                frontier.push(newnode, newnode.getCost())
+            else:
+                if heapContainsHigherCost(frontier.heap, newnode):
+                    frontier.update(newnode, newnode.getCost())
+
+    print "Deu ruim no uniform cost search"
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -152,8 +213,9 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+   
+    print "Deu ruim no a* search"
+    return []
 
 
 # Abbreviations
